@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Idées Géniales</title>
+    <style>
+        /* Le Design (CSS) */
+        body { font-family: sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .app-container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 300px; }
+        h2 { color: #333; text-align: center; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 5px; }
+        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #218838; }
+        ul { list-style-type: none; padding: 0; margin-top: 20px; }
+        li { background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; }
+        .delete-btn { background: red; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-left: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <h2>💡 Mes Idées</h2>
+        <input type="text" id="ideeInput" placeholder="Nouvelle idée...">
+        <button onclick="ajouterIdee()">Ajouter</button>
+        <ul id="listeIdees"></ul>
+    </div>
+
+    <script>
+        // Charger les idées sauvegardées au démarrage
+        document.addEventListener('DOMContentLoaded', chargerIdees);
+
+        function ajouterIdee() {
+            const input = document.getElementById('ideeInput');
+            const texte = input.value;
+            
+            if (texte === '') return alert("Écrivez quelque chose !");
+
+            creerElementListe(texte);
+            sauvegarderEnLocal(texte);
+            input.value = ''; // Vider le champ
+        }
+
+        function creerElementListe(texte) {
+            const li = document.createElement('li');
+            li.textContent = texte;
+            
+            const btn = document.createElement('button');
+            btn.textContent = "X";
+            btn.className = "delete-btn";
+            btn.onclick = function() {
+                li.remove();
+                supprimerDeLocal(texte);
+            };
+
+            li.appendChild(btn);
+            document.getElementById('listeIdees').appendChild(li);
+        }
+
+        // --- Partie Base de données (LocalStorage du navigateur) ---
+        function sauvegarderEnLocal(texte) {
+            let idees = JSON.parse(localStorage.getItem('mesIdees')) || [];
+            idees.push(texte);
+            localStorage.setItem('mesIdees', JSON.stringify(idees));
+        }
+
+        function chargerIdees() {
+            let idees = JSON.parse(localStorage.getItem('mesIdees')) || [];
+            idees.forEach(idee => creerElementListe(idee));
+        }
+
+        function supprimerDeLocal(texte) {
+            let idees = JSON.parse(localStorage.getItem('mesIdees')) || [];
+            idees = idees.filter(i => i !== texte);
+            localStorage.setItem('mesIdees', JSON.stringify(idees));
+        }
+    </script>
+</body>
+</html>
