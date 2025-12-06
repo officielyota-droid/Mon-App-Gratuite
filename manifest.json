@@ -8,15 +8,14 @@
     "description": "Une application simple pour noter mes idées rapidement.",
     "icons": [
         {
-            "src": "icone.JPG",
+            "src": "icone.png",
             "sizes": "192x192",
-            "type": "image/jpeg"
+            "type": "image/png"
         },
         {
             "src": "icone.png",
             "sizes": "512x512",
-            "type": "image/jpeg"
+            "type": "image/png"
         }
     ]
-
 }
