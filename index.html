@@ -7,13 +7,13 @@
     <link rel="manifest" href="/manifest.json">
 
     <style>
-        /* Le Design (CSS) - INCLUANT LE DÉGRADÉ MAGIQUE */
+        /* --- Le Design (CSS) --- */
         body { 
             font-family: sans-serif; 
-            /* Dégradé Orange au bas vers Jaune au sommet */
+            /* Dégradé Orange au bas vers Jaune au sommet (La Magie) */
             background: linear-gradient(to top, #ff9933, #ffcc66); 
             display: flex; 
-            flex-direction: column; /* Ajout pour bien centrer le contenu */
+            flex-direction: column; 
             justify-content: center; 
             align-items: center; 
             min-height: 100vh; 
@@ -31,29 +31,75 @@
         
         /* Style des boutons généraux */
         button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #218838; }
+        button:hover { opacity: 0.9; }
 
         /* Conteneur pour les boutons de gestion (Tri, Nettoyage) */
         .btn-group { display: flex; gap: 10px; margin-top: 15px; }
 
+        /* Style spécifique pour les boutons de gestion */
+        .clear-btn, .sort-btn { 
+            font-size: 14px; 
+            flex-grow: 1; 
+            width: auto;
+        }
+
         /* Style spécifique pour le bouton Trier */
         button.sort-btn { 
-            background-color: #ffc107; /* Jaune/Orange */
+            background-color: #ffc107; 
             color: #333; 
-            flex-grow: 1; /* Prend l'espace disponible */
-            width: auto; /* Supprime le width: 100% */
-            font-size: 14px;
         }
-        button.sort-btn:hover { opacity: 0.9; } 
-
+        
         /* Styles de la liste */
         ul { list-style-type: none; padding: 0; margin-top: 20px; }
-        li { background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        /* Rends les éléments de liste cliquables */
+        li { 
+            background: #fff; 
+            border-bottom: 1px solid #eee; 
+            padding: 10px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            cursor: pointer; /* Indique qu'on peut cliquer dessus */
+        }
         .delete-btn { background: red; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-left: 10px; }
         
-        /* Style pour le bouton Supprimer les idées terminées (pour un futur ajout) */
-        /* Note: Nous n'avons pas la fonction clear-btn complète, mais le style est prêt */
-        .clear-btn { background-color: #dc3545; color: white; font-size: 14px; flex-grow: 1; border: none; padding: 10px; border-radius: 5px; cursor: pointer; }
+        /* --- Styles de la Modale (Affichage Détaillé) --- */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1; 
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.6); 
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; 
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -66,11 +112,18 @@
         <ul id="listeIdees"></ul>
 
         <div class="btn-group">
-             <button class="clear-btn" onclick="alert('Fonctionnalité en développement !')">Supprimer terminées</button>
-             
+             <button class="clear-btn" onclick="alert('Fonction de nettoyage à implémenter !')">Supprimer terminées</button>
              <button class="sort-btn" onclick="trierIdees()">Trier (A-Z)</button> 
         </div>
     </div>
+
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="fermerDetail()">&times;</span>
+            <p id="detailText"></p>
+        </div>
+    </div>
+
 
     <script>
         // Charger les idées sauvegardées au démarrage
@@ -84,17 +137,24 @@
 
             creerElementListe(texte);
             sauvegarderEnLocal(texte);
-            input.value = ''; // Vider le champ
+            input.value = ''; 
         }
 
         function creerElementListe(texte) {
             const li = document.createElement('li');
             li.textContent = texte;
             
+            // Ouvre la modale au clic
+            li.onclick = function() {
+                afficherDetail(texte);
+            };
+
             const btn = document.createElement('button');
             btn.textContent = "X";
             btn.className = "delete-btn";
-            btn.onclick = function() {
+            btn.onclick = function(event) {
+                // Arrête la propagation pour que le clic sur X ne déclenche pas l'affichage du détail
+                event.stopPropagation(); 
                 li.remove();
                 supprimerDeLocal(texte);
             };
@@ -103,7 +163,7 @@
             document.getElementById('listeIdees').appendChild(li);
         }
 
-        // 💥 NOUVELLE FONCTION DE TRI (A-Z) 💥
+        // 💥 FONCTION : Trier les idées par ordre alphabétique (A-Z) 💥
         function trierIdees() {
              let idees = JSON.parse(localStorage.getItem('mesIdees')) || [];
              
@@ -120,15 +180,38 @@
                  return 0;
              });
 
-             // Mise à jour de l'affichage
+             // Recharger l'affichage avec la liste triée
              document.getElementById('listeIdees').innerHTML = '';
              idees.forEach(idee => creerElementListe(idee));
              
-             // Ré-enregistrer la liste triée dans le LocalStorage (pour qu'elle soit persistante)
+             // Ré-enregistrer la liste triée dans le LocalStorage
              localStorage.setItem('mesIdees', JSON.stringify(idees));
         }
+        
+        // 💥 FONCTION : Afficher le Détail dans la Modale 💥
+        function afficherDetail(texte) {
+            const modal = document.getElementById('detailModal');
+            const detailText = document.getElementById('detailText');
+            
+            detailText.textContent = texte;
+            modal.style.display = "block"; // Affiche la modale
+        }
 
-        // --- Partie Base de données (LocalStorage du navigateur) ---
+        // 💥 FONCTION : Fermer le Détail 💥
+        function fermerDetail() {
+            const modal = document.getElementById('detailModal');
+            modal.style.display = "none"; // Cache la modale
+        }
+
+        // 💥 GESTION GLOBALE : Fermer la modale en cliquant en dehors 💥
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        // --- Partie Base de données (LocalStorage) ---
         function sauvegarderEnLocal(texte) {
             let idees = JSON.parse(localStorage.getItem('mesIdees')) || [];
             idees.push(texte);
