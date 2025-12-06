@@ -1,0 +1,21 @@
+{
+    "name": "Mes Idées Géniales",
+    "short_name": "Idées App",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#28a745",
+    "description": "Une application simple pour noter mes idées rapidement.",
+    "icons": [
+        {
+            "src": "icone.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icone.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
